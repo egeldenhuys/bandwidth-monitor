@@ -5,7 +5,7 @@ Scrape bandwidth statistics from router's web interface every `n` seconds.
 Written for the [TP Link TD-W8960N] Modem Router.
 
 #### Requirements
-- Python 2.7
+- Tested with Python 2.7.6 and 3.5.1
 - [Requests] library
 
 #### Usage
