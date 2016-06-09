@@ -34,7 +34,7 @@ def main():
 
     if (len(sys.argv) > 2):
         if (sys.argv[2] != ''):
-            timeDiff = int(sys.argv[2])
+            timeDiff = float(sys.argv[2])
 
     s = requests.Session()
 
@@ -49,6 +49,9 @@ def main():
     while (True):
         statsNew = getStatistics(s)
 
+        if (statsNew[0] == -1):
+            print('Unable to get statistics. Did the router restart?')
+
         statsDiff = [statsNew[0] - statsOld[0], statsNew[1] - statsOld[1]]
         statsRate = [statsDiff[0] / timeDiff, statsDiff[1] / timeDiff]
 
@@ -56,6 +59,10 @@ def main():
         up = [int(statsNew[1] / totalScale), int(statsRate[1] / rateScale)]
 
         session = [int((statsNew[0] - startStats[0]) / totalScale), int((statsNew[1] - startStats[1]) / totalScale)]
+
+        if (session[0] < 0 | session[1] < 0):
+            print('Router has been restarted!')
+            startStats = statsNew
 
         sys.stdout.write('Total Down ({0}): {1} ({2} {3}/s)\n'.format(totalScaleStr, down[0], down[1], rateScaleStr))
         sys.stdout.write('Total Up ({0})  : {1} ({2} {3}/s)\n'.format(totalScaleStr, up[0], up[1], rateScaleStr))
@@ -195,13 +202,13 @@ def getStatistics(session):
 
     except requests.Timeout as e:
         print(e.message)
-        sleep(5)
+        time.sleep(5)
     except requests.ConnectionError as e:
         print(e.message)
-        sleep(5)
+        time.sleep(5)
     except socket.error as e:
         print(e.message)
-        sleep(5)
+        time.sleep(5)
     finally:
         return downUp
 
