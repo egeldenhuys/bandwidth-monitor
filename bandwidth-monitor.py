@@ -181,20 +181,24 @@ def getStatistics(session):
     }
 
     try:
-        r = session.post(url, data=data, allow_redirects=True, timeout=5)
+        r = session.post(url, data=data, allow_redirects=True)
+
+        searchString = '<font color="#000000">Transmit total Bytes</font></td><td class="tabdata"><div align=center>'
+        downUp[0] = extractValue(searchString, r.text)
+
+        searchString = '<font color="#000000">Receive total Bytes</font></td><td class="tabdata"><div align=center>'
+        downUp[1] = extractValue(searchString, r.text)
+
     except requests.Timeout as e:
         print(e.message)
-        return downUp
+        sleep(5)
     except requests.ConnectionError as e:
         print(e.message)
+        sleep(5)
+    except socket.error as e:
+        print(e.message)
+        sleep(5)
+    finally:
         return downUp
-
-    searchString = '<font color="#000000">Transmit total Bytes</font></td><td class="tabdata"><div align=center>'
-    downUp[0] = extractValue(searchString, r.text)
-
-    searchString = '<font color="#000000">Receive total Bytes</font></td><td class="tabdata"><div align=center>'
-    downUp[1] = extractValue(searchString, r.text)
-
-    return downUp
 
 main()
