@@ -51,8 +51,8 @@ def main():
         statsDiff = [statsNew[0] - statsOld[0], statsNew[1] - statsOld[1]]
         statsRate = [statsDiff[0] / timeDiff, statsDiff[1] / timeDiff]
 
-        down = [statsNew[0] / totalScale, statsRate[0] / rateScale]
-        up = [statsNew[1] / totalScale, statsRate[1] / rateScale]
+        down = [int(statsNew[0] / totalScale), int(statsRate[0] / rateScale)]
+        up = [int(statsNew[1] / totalScale), int(statsRate[1] / rateScale)]
 
         sys.stdout.write('Total Down ({0}): {1} ({2} {3}/s)\n'.format(totalScaleStr, down[0], down[1], rateScaleStr))
         sys.stdout.write('Total Up ({0}): {1} ({2} {3}/s)\n\n'.format(totalScaleStr, up[0], up[1], rateScaleStr))
@@ -77,11 +77,13 @@ def authenticate(username, password, session, alreadyHashed = False):
     """
 
     m = hashlib.md5()
+    username = username.encode('utf8-')
     m.update(username)
     usernameHash = m.hexdigest()
 
     if (alreadyHashed == False):
         m = hashlib.md5()
+        password = password.encode('utf-8')
         m.update(password)
         passwordHash = m.hexdigest()
     else:
