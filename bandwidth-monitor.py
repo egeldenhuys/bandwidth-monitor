@@ -44,6 +44,7 @@ def main():
     authenticate(username, password, s, hashed)
 
     statsOld = getStatistics(s)
+    startStats = statsOld
 
     while (True):
         statsNew = getStatistics(s)
@@ -54,8 +55,11 @@ def main():
         down = [int(statsNew[0] / totalScale), int(statsRate[0] / rateScale)]
         up = [int(statsNew[1] / totalScale), int(statsRate[1] / rateScale)]
 
+        session = [int((statsNew[0] - startStats[0]) / totalScale), int((statsNew[1] - startStats[1]) / totalScale)]
+
         sys.stdout.write('Total Down ({0}): {1} ({2} {3}/s)\n'.format(totalScaleStr, down[0], down[1], rateScaleStr))
-        sys.stdout.write('Total Up ({0}): {1} ({2} {3}/s)\n\n'.format(totalScaleStr, up[0], up[1], rateScaleStr))
+        sys.stdout.write('Total Up ({0})  : {1} ({2} {3}/s)\n'.format(totalScaleStr, up[0], up[1], rateScaleStr))
+        sys.stdout.write('Session ({0})   : D: {1} | U: {2}\n\n'.format(totalScaleStr, session[0], session[1]))
         sys.stdout.flush()
 
         statsOld = statsNew
