@@ -65,7 +65,16 @@ def main():
     return
 
 def authenticate(username, password, session, alreadyHashed = False):
-    #print('Authenticate...')
+    """
+    Authenticates with the router by sending the login information. cookies
+    are stored in the given session.
+
+    username - The plaintext username to use
+    password - The plaintext password to use OR the MD5 hash of the password
+                if the alreadyHashed flag is set
+    session  - requests.Session to use for making connections
+    alreadyHashed - Set to True if the password given is the MD5 hash
+    """
 
     m = hashlib.md5()
     m.update(username)
@@ -107,23 +116,28 @@ def authenticate(username, password, session, alreadyHashed = False):
         sys.stdout.flush()
         exit(1)
 
-
-    #print(r.text)
-    #print(r.headers)
-    #print(r.cookies.keys())
-
     if (r.cookies['C1'] == '%00'):
         print('Incorrect password!')
         sys.stdout.flush()
         session.close()
         exit(1)
 
-
-    #print('%s - %s' % (r.status_code, r.reason))
-
     return
 
 def extractValue(indexString, content):
+    """
+    Extracts an integer value after the indexString from the given content.
+
+    Searched for the given string, then moves over that string + 1 pos (new line),
+    then reads the numbers until a '<' is found
+
+    indexString - The string to search for.
+    content     - The content to search in.
+
+    Returns:
+    Integer if found, else raises an ValueError exception
+    """
+
     index = content.find(indexString)
 
     if (index == -1):
@@ -144,7 +158,16 @@ def extractValue(indexString, content):
     return number
 
 def getStatistics(session):
-    #print('Get statistics...')
+    """
+    Scrape statistics from the web interface. Session needs to be authenticated
+    beforehand.
+
+    Returns an array containing the total bytes transfered
+    [0] - Total Bytes Downloaded
+    [1] - Total Bytes Sent
+
+    Returns [-1, -1] if there is an error
+    """
 
     downUp = [-1, -1]
 
@@ -164,18 +187,11 @@ def getStatistics(session):
         print(e.message)
         return downUp
 
-
-    #print(r.url)
-    #print('%s - %s' % (r.status_code, r.reason))
-
     searchString = '<font color="#000000">Transmit total Bytes</font></td><td class="tabdata"><div align=center>'
     downUp[0] = extractValue(searchString, r.text)
 
     searchString = '<font color="#000000">Receive total Bytes</font></td><td class="tabdata"><div align=center>'
     downUp[1] = extractValue(searchString, r.text)
-
-    downUp[0] = downUp[0]
-    downUp[1] = downUp[1]
 
     return downUp
 
