@@ -39,7 +39,7 @@ def main():
     s = requests.Session()
 
     if (not hashed):
-        password = getpass.getpass('Password: ')
+        password = getpass.getpass('Router admin password: ')
 
     authenticate(username, password, s, hashed)
 
@@ -49,7 +49,10 @@ def main():
     while (True):
         statsNew = getStatistics(s)
 
-        if (statsNew[0] != -1):
+        if (statsNew[0] == -2):
+            print('[INFO] Session has been reset. Authenticating again...')
+            authenticate(username, password, s, hashed)
+        elif (statsNew[0] != -1):
             statsDiff = [statsNew[0] - statsOld[0], statsNew[1] - statsOld[1]]
             statsRate = [statsDiff[0] / timeDiff, statsDiff[1] / timeDiff]
 
@@ -59,7 +62,7 @@ def main():
             session = [int((statsNew[0] - startStats[0]) / totalScale), int((statsNew[1] - startStats[1]) / totalScale)]
 
             if (session[0] < 0 | session[1] < 0):
-                print('[INFO] Router has been restarted! Reset session stats.')
+                print('[INFO] Router has been restarted! Resetting session statistics.')
                 statsOld = statsNew
                 startStats = statsOld
 
@@ -71,7 +74,6 @@ def main():
             statsOld = statsNew
 
         time.sleep(timeDiff)
-
     return
 
 def authenticate(username, password, session, alreadyHashed = False, retries = 0):
@@ -124,6 +126,8 @@ def authenticate(username, password, session, alreadyHashed = False, retries = 0
         'uiWebLoginhiddenPassword': passwordHash
         }
 
+    print('[INFO] Sending login details to router...')
+
     try:
         r = session.post(url, data=data, allow_redirects=False, timeout=5)
     except requests.ConnectionError as e:
@@ -133,19 +137,22 @@ def authenticate(username, password, session, alreadyHashed = False, retries = 0
     except requests.Timeout as e:
         print('[ERROR] Request timeout while authenticating with router!')
         error = True
+    except exception as e:
+        print(e.message)
 
     if (error == False):
         if (r.cookies['C1'] == '%00'):
-            print('Incorrect password!')
+            print('[ERROR] Incorrect password!')
             error = True
             quit = True
-
+        else:
+            print('[INFO] Login successful!')
     if (error == True and quit == False):
         session.close()
         if (retries < maxRetries):
             retries += 1
-            print('[INFO] Retry authentication {0}/{1}...'.format(retries, maxRetries))
-            time.sleep(5)
+            print('[INFO] Retrying authentication {0}/{1}...'.format(retries, maxRetries))
+            time.sleep(10)
             authenticate(username, password, session, alreadyHashed, retries)
         else:
             quit = True
@@ -168,7 +175,7 @@ def extractValue(indexString, content):
     content     - The content to search in.
 
     Returns:
-    Integer if found, else raises an ValueError exception
+    Integer if found, else -1
     """
 
     index = content.find(indexString)
@@ -213,6 +220,10 @@ def getStatistics(session):
 
     try:
         r = session.post(url, data=data, allow_redirects=True, timeout=5)
+
+        if (r.url == 'http://192.168.1.1/login_security.html'):
+            downUp = [-2, -2]
+            return downUp
 
         searchString = '<font color="#000000">Transmit total Bytes</font></td><td class="tabdata"><div align=center>'
         downUp[0] = extractValue(searchString, r.text)
