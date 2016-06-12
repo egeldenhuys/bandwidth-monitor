@@ -7,6 +7,7 @@ Written for the [TP Link TD-W8960N] Modem Router.
 #### Requirements
 - Tested with Python 2.7.6 and 3.5.1
 - [Requests] library
+    - `pip install requests`
 
 #### Usage
 ```
